@@ -20,9 +20,9 @@ PODMAN_URI = "unix:///run/user/1000/podman/podman.sock"
 
 # File locations for the Nextcloud data and such to be mounted as a volume
 # These could become volumes later
-NEXTCLOUD_MAIN_PATH=""
-NEXTCLOUD_APP_PATH=""
-NEXTCLOUD_CONFIG_PATH=""
+NEXTCLOUD_MAIN_PATH="nextcloud"
+NEXTCLOUD_APPS_PATH="nextcloud_apps"
+NEXTCLOUD_CONFIG_PATH="nexcloud_config"
 NEXTCLOUD_DATA_PATH="nextcloud_data"
 
 # Persistant
@@ -30,10 +30,10 @@ MARIADB_DATA="mariadb"
 
 # Config data
 MARIADB_HOST="mariadb.dns.podman"
-MARIADB_DATABASE="nextcloud"
-MARIADB_USER="nextcloud"
-MARIADB_PASSWORD="notsecure"
-MARIADB_ROOT_PASSWORD="notsecure"
+MARIADB_DATABASE="owncloud"
+MARIADB_USER="owncloud"
+MARIADB_PASSWORD="KhE1FwflA0svX"
+MARIADB_ROOT_PASSWORD="Lvz1wCwJ8Q38aKe3K8tXMafIIyr47ReR"
 
 def Update_Nextcloud():
     #Actions needed to update the containers
@@ -51,6 +51,7 @@ def Start_Nextcloud():
         " -e MARIADB_PASSWORD="+MARIADB_PASSWORD+"" \
         " -v "+MARIADB_DATA+":/var/lib/mysql" \
         " --network nextcloud-net" \
+        " -p 3306:3306" \
         " mariadb:latest")
 
     print("...Starting Nextcloud")
@@ -61,6 +62,9 @@ def Start_Nextcloud():
         " -e MYSQL_PASSWORD="+MARIADB_PASSWORD+"" \
         " -e NEXTCLOUD_ADMIN_USER=admin" \
         " -e NEXTCLOUD_ADMIN_PASSWORD=password" \
+        " -v "+NEXTCLOUD_MAIN_PATH+":/var/www/html" \
+        " -v "+NEXTCLOUD_CONFIG_PATH+":/var/www/html/config" \
+        " -v "+NEXTCLOUD_APPS_PATH+":/var/www/html/apps" \
         " -v "+NEXTCLOUD_DATA_PATH+":/var/www/html/data" \
         " --network nextcloud-net" \
         " -p 8080:80" \
