@@ -1,4 +1,5 @@
 import argparse
+import os
 #from podman import PodmanClient
 
 # ----------------------------------------
@@ -17,17 +18,58 @@ import argparse
 APP_DESCRIPTION = "This applicaiton manages the running containerized nextcloud "
 PODMAN_URI = "unix:///run/user/1000/podman/podman.sock"
 
+# File locations for the Nextcloud data and such to be mounted as a volume
+# These could become volumes later
+NEXTCLOUD_MAIN_PATH=""
+NEXTCLOUD_APP_PATH=""
+NEXTCLOUD_CONFIG_PATH=""
+NEXTCLOUD_DATA_PATH="nextcloud_data"
+
+# Persistant
+MARIADB_DATA="mariadb"
+
+# Config data
+MARIADB_HOST="mariadb.dns.podman"
+MARIADB_DATABASE="nextcloud"
+MARIADB_USER="nextcloud"
+MARIADB_PASSWORD="notsecure"
+MARIADB_ROOT_PASSWORD="notsecure"
+
 def Update_Nextcloud():
     #Actions needed to update the containers
-    print("Update_Nextcloud Not implemented yet")
+    print("...Pulling the latest containers")
+    os.system("podman pull docker.io/mariadb:latest")
+    os.system("podman pull docker.io/nextcloud:latest")
 
 def Start_Nextcloud():
     #Actions needed to start nextcloud
-    print("Start_Nextcloud Not implemented yet")
+    print("...Starting the database")
+    os.system("podman run -d --name mariadb --label mariadb --rm" \
+        " -e MARIADB_DATABASE="+MARIADB_DATABASE+"" \
+        " -e MARIADB_ROOT_PASSWORD="+MARIADB_ROOT_PASSWORD+"" \
+        " -e MARIADB_USER="+MARIADB_USER+"" \
+        " -e MARIADB_PASSWORD="+MARIADB_PASSWORD+"" \
+        " -v "+MARIADB_DATA+":/var/lib/mysql/data" \
+        " --network nextcloud-net" \
+        " mariadb:latest")
+
+    print("...Starting Nextcloud")
+    os.system("podman run -d --name nextcloud --label nextcloud --rm" \
+        " -e MYSQL_HOST="+MARIADB_HOST+"" \
+        " -e MYSQL_USER="+MARIADB_USER+"" \
+        " -e MYSQL_PASSWORD="+MARIADB_PASSWORD+"" \
+        " -e NEXTCLOUD_ADMIN=admin" \
+        " -e NEXTCLOUD_ADMIN_PASSWORD=password" \
+        " -v "+NEXTCLOUD_DATA_PATH+":/var/www/html/data" \
+        " --network nextcloud-net" \
+        " -p 8080:80" \
+        " nextcloud:latest")
 
 def Stop_Nextcloud():
     #Actions needed to start nextcloud
-    print("Stop_Nextcloud Not implemented yet")
+    print("...Stopping Nexcloud containers")
+    os.system("podman stop mariadb")
+    os.system("podman stop nextcloud")
 
 def Check_Env():
     # This will check the env to determine if it is OK to run
@@ -39,13 +81,15 @@ parser.add_argument('action',choices=['start','stop','update'],metavar='command'
 
 args = parser.parse_args()
 
+print(args.action)
+
 match args.action:
     case 'start':
         Start_Nextcloud()
     case 'stop':
         Stop_Nextcloud()
     case 'update':
-        Update_Nextcloud()
+       Update_Nextcloud()
 
 #print(args.accumulate(args.integers))
 
