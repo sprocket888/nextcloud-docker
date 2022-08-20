@@ -1,2 +1,33 @@
 FROM docker.io/library/alpine:latest
 
+FROM rockylinux/rockylinux:latest
+ENV container docker
+RUN yum -y install epel-release ; yum -y update
+RUN dnf module enable -y php:7.4
+RUN dnf install -y php
+RUN yum install -y bzip2 unzip lsof wget traceroute nmap tcpdump bridge-utils ; yum -y update
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
+systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]
+
+#-e MYSQL_HOST=10.1.1.160 \
+#-e MYSQL_DATABASE=ncdb \
+#-e MYSQL_USER=nc-user \
+#-e MYSQL_PASSWORD=nc-pass \
+#-e NEXTCLOUD_ADMIN_USER=admin \
+#-e NEXTCLOUD_ADMIN_PASSWORD=rockylinux \
+#-e NEXTCLOUD_DATA_DIR=/var/www/html/data \
+#-e NEXTCLOUD_TRUSTED_DOMAINS=10.1.1.160 \
+#-v /sys/fs/cgroup:/sys/fs/cgroup:ro \
+#-v /usr/local/nc/nextcloud:/var/www/html \
+#-v /usr/local/nc/apps:/var/www/html/custom_apps \
+#-v /usr/local/nc/config:/var/www/html/config \
+#-v /usr/local/nc/data:/var/www/html/data \
