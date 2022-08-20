@@ -38,8 +38,8 @@ MARIADB_ROOT_PASSWORD="notsecure"
 def Update_Nextcloud():
     #Actions needed to update the containers
     print("...Pulling the latest containers")
-    os.system("podman pull docker.io/mariadb:latest")
-    os.system("podman pull docker.io/nextcloud:latest")
+    os.system("podman pull docker.io/library/mariadb:latest")
+    os.system("podman pull docker.io/library/nextcloud:latest")
 
 def Start_Nextcloud():
     #Actions needed to start nextcloud
@@ -49,16 +49,17 @@ def Start_Nextcloud():
         " -e MARIADB_ROOT_PASSWORD="+MARIADB_ROOT_PASSWORD+"" \
         " -e MARIADB_USER="+MARIADB_USER+"" \
         " -e MARIADB_PASSWORD="+MARIADB_PASSWORD+"" \
-        " -v "+MARIADB_DATA+":/var/lib/mysql/data" \
+        " -v "+MARIADB_DATA+":/var/lib/mysql" \
         " --network nextcloud-net" \
         " mariadb:latest")
 
     print("...Starting Nextcloud")
     os.system("podman run -d --name nextcloud --label nextcloud --rm" \
+        " -e MYSQL_DATABASE="+MARIADB_DATABASE+"" \
         " -e MYSQL_HOST="+MARIADB_HOST+"" \
         " -e MYSQL_USER="+MARIADB_USER+"" \
         " -e MYSQL_PASSWORD="+MARIADB_PASSWORD+"" \
-        " -e NEXTCLOUD_ADMIN=admin" \
+        " -e NEXTCLOUD_ADMIN_USER=admin" \
         " -e NEXTCLOUD_ADMIN_PASSWORD=password" \
         " -v "+NEXTCLOUD_DATA_PATH+":/var/www/html/data" \
         " --network nextcloud-net" \
