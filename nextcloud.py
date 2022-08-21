@@ -23,7 +23,7 @@ PODMAN_URI = "unix:///run/user/1000/podman/podman.sock"
 NEXTCLOUD_MAIN_PATH="nextcloud"
 NEXTCLOUD_APPS_PATH="nextcloud_apps"
 NEXTCLOUD_CONFIG_PATH="nexcloud_config"
-NEXTCLOUD_DATA_PATH="nextcloud_data"
+NEXTCLOUD_DATA_PATH="/opt/nfs/datahouse/nextcloud.data"
 
 # Persistant
 MARIADB_DATA="mariadb"
@@ -54,21 +54,26 @@ def Start_Nextcloud():
         " -p 3306:3306" \
         " mariadb:latest")
 
-    print("...Starting Nextcloud")
-    os.system("podman run -d --name nextcloud --label nextcloud --rm" \
+#     " -e NEXTCLOUD_ADMIN_USER=admin" \
+#        " -e NEXTCLOUD_ADMIN_PASSWORD=password" \
+
+    runcmd="podman run -d --group-add keep-groups --name nextcloud --label nextcloud --rm" \
         " -e MYSQL_DATABASE="+MARIADB_DATABASE+"" \
         " -e MYSQL_HOST="+MARIADB_HOST+"" \
         " -e MYSQL_USER="+MARIADB_USER+"" \
         " -e MYSQL_PASSWORD="+MARIADB_PASSWORD+"" \
-        " -e NEXTCLOUD_ADMIN_USER=admin" \
-        " -e NEXTCLOUD_ADMIN_PASSWORD=password" \
         " -v "+NEXTCLOUD_MAIN_PATH+":/var/www/html" \
         " -v "+NEXTCLOUD_CONFIG_PATH+":/var/www/html/config" \
         " -v "+NEXTCLOUD_APPS_PATH+":/var/www/html/apps" \
         " -v "+NEXTCLOUD_DATA_PATH+":/var/www/html/data" \
         " --network nextcloud-net" \
         " -p 8080:80" \
-        " nextcloud:latest")
+        " nextcloud:latest"
+
+    print(runcmd)
+
+    print("...Starting Nextcloud")
+    os.system(runcmd)
 
 def Stop_Nextcloud():
     #Actions needed to start nextcloud
